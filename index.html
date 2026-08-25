@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>软考架构师 · 备考打卡</title>
+<style>
+    :root {
+        --bg: #f4f5fb;
+        --card: #ffffff;
+        --text: #1e2235;
+        --muted: #7a7f95;
+        --line: #e8eaf3;
+        --accent: #6366f1;
+        --accent-soft: #eef0ff;
+        --green: #10b981;
+        --radius: 14px;
+        --shadow: 0 2px 12px rgba(30, 34, 53, .06);
+        /* 科目色板 */
+        --c-综合: #6366f1;
+        --c-案例: #10b981;
+        --c-论文: #f59e0b;
+        --c-模拟: #ef4444;
+        --c-背诵: #8b5cf6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.55;
+        padding-bottom: 60px;
+    }
+
+    header {
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: #fff;
+        padding: 28px 20px 24px;
+    }
+
+    .header-inner {
+        max-width: 860px;
+        margin: 0 auto;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 16px;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    h1 { font-size: 22px; font-weight: 700; letter-spacing: .5px; }
+    .subtitle { opacity: .85; font-size: 13px; margin-top: 4px; }
+
+    .countdown-box {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        flex-direction: row;
+    }
+    .countdown-num { font-size: 44px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+    .countdown-unit { font-size: 14px; opacity: .85; }
+    .exam-date-wrap {
+        display: block;
+        margin-top: 6px;
+        font-size: 12px;
+        opacity: .9;
+    }
+    .exam-date-wrap input {
+        border: none;
+        border-radius: 8px;
+        padding: 4px 8px;
+        font-size: 13px;
+        color: var(--text);
+        margin-left: 6px;
+    }
+
+    .overall {
+        max-width: 860px;
+        margin: 18px auto 0;
+    }
+    .overall-bar {
+        height: 12px;
+        background: rgba(255,255,255,.25);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+    .overall-bar > div {
+        height: 100%;
+        width: 0%;
+        background: linear-gradient(90deg, #a7f3d0, #34d399);
+        border-radius: 999px;
+        transition: width .5s ease;
+    }
+    .overall-text {
+        margin-top: 8px;
+        font-size: 13px;
+        opacity: .92;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    main { max-width: 860px; margin: 0 auto; padding: 20px 16px 0; }
+
+    /* 科目统计 */
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+    }
+    .stat-card {
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 14px 16px;
+    }
+    .stat-card .name { font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 6px; }
+    .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+    .stat-card .hours { font-size: 20px; font-weight: 800; margin-top: 6px; font-variant-numeric: tabular-nums; }
+    .stat-card .hours small { font-size: 12px; color: var(--muted); font-weight: 400; }
+    .stat-bar { height: 6px; background: var(--line); border-radius: 999px; margin-top: 8px; overflow: hidden; }
+    .stat-bar > div { height: 100%; width: 0%; border-radius: 999px; transition: width .4s ease; }
+
+    /* 周卡片 */
+    .week-card {
+        background: var(--card);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        margin-bottom: 18px;
+        overflow: hidden;
+    }
+    .week-head {
+        padding: 16px 18px 12px;
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .week-badge {
+        min-width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: var(--accent-soft);
+        color: var(--accent);
+        font-weight: 800;
+        font-size: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        line-height: 1.15;
+    }
+    .week-badge small { font-size: 10px; font-weight: 600; opacity: .75; }
+    .week-title { flex: 1; }
+    .week-title h2 { font-size: 16px; font-weight: 700; }
+    .week-title p { font-size: 12.5px; color: var(--muted); margin-top: 2px; }
+    .week-meta { text-align: right; font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .week-meta b { color: var(--text); font-size: 14px; }
+    .arrow { transition: transform .25s ease; color: var(--muted); font-size: 13px; }
+    .week-card.open .arrow { transform: rotate(90deg); }
+
+    .week-body { display: none; padding: 0 18px 16px; }
+    .week-card.open .week-body { display: block; }
+    .week-bar { height: 8px; background: var(--line); border-radius: 999px; overflow: hidden; margin-bottom: 14px; }
+    .week-bar > div { height: 100%; width: 0%; background: linear-gradient(90deg, #6366f1, #8b5cf6); border-radius: 999px; transition: width .4s ease; }
+
+    .task {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 11px 12px;
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        margin-bottom: 9px;
+        cursor: pointer;
+        transition: background .15s ease, border-color .15s ease;
+        position: relative;
+    }
+    .task:hover { background: #fafbff; }
+    .task.done { background: #f6fdf9; border-color: #d3f1e3; }
+    .checkbox {
+        min-width: 21px;
+        height: 21px;
+        border: 2px solid #c9cde0;
+        border-radius: 7px;
+        margin-top: 2px;
+        position: relative;
+        transition: all .15s ease;
+    }
+    .task.done .checkbox { background: var(--green); border-color: var(--green); }
+    .task.done .checkbox::after {
+        content: '';
+        position: absolute;
+        left: 6px; top: 2px;
+        width: 5px; height: 10px;
+        border: solid #fff;
+        border-width: 0 2.5px 2.5px 0;
+        transform: rotate(45deg);
+    }
+    .task-main { flex: 1; }
+    .task-name { font-size: 14px; font-weight: 500; }
+    .task.done .task-name { color: var(--muted); text-decoration: line-through; }
+    .task-tags { margin-top: 5px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+    .tag {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 9px;
+        border-radius: 999px;
+        color: #fff;
+    }
+    .tag.hours-tag { background: var(--line); color: var(--muted); }
+    .del-btn {
+        border: none;
+        background: none;
+        color: #d1d5e8;
+        font-size: 16px;
+        cursor: pointer;
+        padding: 2px 6px;
+        border-radius: 6px;
+        visibility: hidden;
+    }
+    .task:hover .del-btn.custom-del { visibility: visible; color: #f87171; }
+
+    /* 新增任务 */
+    .add-task {
+        display: none;
+        gap: 8px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+    }
+    .add-task.show { display: flex; }
+    .add-task input[type=text] { flex: 1; min-width: 160px; }
+    .add-task input, .add-task select {
+        border: 1px solid var(--line);
+        border-radius: 9px;
+        padding: 8px 10px;
+        font-size: 13px;
+        outline: none;
+        background: #fff;
+        color: var(--text);
+    }
+    .add-task input:focus, .add-task select:focus { border-color: var(--accent); }
+    .add-task input[type=number] { width: 72px; }
+    .btn {
+        border: none;
+        border-radius: 9px;
+        padding: 8px 16px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity .15s ease;
+    }
+    .btn:hover { opacity: .88; }
+    .btn-primary { background: var(--accent); color: #fff; }
+    .btn-ghost { background: var(--accent-soft); color: var(--accent); }
+    .btn-danger { background: #fef2f2; color: #ef4444; }
+    .toggle-add {
+        margin-top: 10px;
+        width: 100%;
+        padding: 8px;
+        background: none;
+        border: 1.5px dashed var(--line);
+        border-radius: 10px;
+        color: var(--muted);
+        font-size: 12.5px;
+        cursor: pointer;
+    }
+    .toggle-add:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* 笔记 */
+    .week-note {
+        width: 100%;
+        margin-top: 12px;
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-size: 13px;
+        font-family: inherit;
+        resize: vertical;
+        min-height: 54px;
+        outline: none;
+        color: var(--text);
+        background: #fafbfd;
+    }
+    .week-note:focus { border-color: var(--accent); background: #fff; }
+
+    footer {
+        max-width: 860px;
+        margin: 26px auto 0;
+        padding: 0 16px;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+    }
+    footer .tip { font-size: 12px; color: var(--muted); }
+    footer .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    @media (max-width: 560px) {
+        .header-inner { flex-direction: column; align-items: flex-start; }
+        .week-meta { display: none; }
+    }
+</style>
+</head>
+<body>
+
+<header>
+    <div class="header-inner">
+        <div>
+            <h1>系统架构设计师 · 备考打卡</h1>
+            <p class="subtitle">每周 10 小时 · 6 周冲刺 · 目标三科均衡过线</p>
+        </div>
+        <div class="countdown-box">
+            <span class="countdown-num" id="countdownNum">--</span>
+            <span class="countdown-unit">天后开考</span>
+            <label class="exam-date-wrap">考试日期
+                <input type="date" id="examDateInput">
+            </label>
+        </div>
+    </div>
+    <div class="overall">
+        <div class="overall-bar"><div id="overallBar"></div></div>
+        <div class="overall-text">
+            <span id="overallText">总进度 --</span>
+            <span id="hoursText"></span>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="stats-grid" id="subjectStats"></section>
+    <section id="weeksContainer"></section>
+</main>
+
+<footer>
+    <span class="tip">数据自动保存在本机浏览器（localStorage），建议定期导出备份。</span>
+    <div class="actions">
+        <button class="btn btn-ghost" id="exportBtn">导出数据</button>
+        <button class="btn btn-ghost" id="importBtn">导入数据</button>
+        <button class="btn btn-danger" id="resetBtn">重置全部</button>
+        <input type="file" id="importFile" accept=".json" style="display:none">
+    </div>
+</footer>
+
+<script>
+/* ================= 计划数据（校准版：每周 10h） ================= */
+const PLAN = [
+    {
+        id: 'w1', title: '摸底 + 素材准备',
+        goal: '明确薄弱项，写好论文项目素材卡',
+        tasks: [
+            { id: 'w1t1', name: '限时做 1 套近年综合真题 + 对答案', subject: '综合', hours: 2.5 },
+            { id: 'w1t2', name: '对照错题字典式翻教程，标记薄弱模块', subject: '综合', hours: 2 },
+            { id: 'w1t3', name: '写 2 张论文项目素材卡（背景/规模/角色/技术栈/量化效果）', subject: '论文', hours: 2.5 },
+            { id: 'w1t4', name: '第一轮背诵：六大质量属性 + 场景六要素 + SAAM/ATAM/CBAM', subject: '案例', hours: 2 },
+            { id: 'w1t5', name: '架构英语术语 50 个（通勤碎片时间）', subject: '背诵', hours: 1 },
+        ],
+    },
+    {
+        id: 'w2', title: '综合首轮 + 案例入门 + 论文①',
+        goal: '错题本建立，完成第一篇限时论文',
+        tasks: [
+            { id: 'w2t1', name: '综合真题选择题 3 个年份（每天约 40 道 + 解析）', subject: '综合', hours: 4 },
+            { id: 'w2t2', name: '精做 2 道质量属性必答案例真题，总结答题模板', subject: '案例', hours: 3 },
+            { id: 'w2t3', name: '论文① 限时 120 分钟完整手打 + 对照范文自评', subject: '论文', hours: 3 },
+        ],
+    },
+    {
+        id: 'w3', title: '案例主攻周',
+        goal: '数据库 + Web 架构两道选答题成型',
+        tasks: [
+            { id: 'w3t1', name: '综合真题再刷 3 个年份', subject: '综合', hours: 3.5 },
+            { id: 'w3t2', name: '案例专项：数据库题 2 道 + Web 高并发架构题 2 道', subject: '案例', hours: 4 },
+            { id: 'w3t3', name: '论文② 限时完整写作 + 自评修正', subject: '论文', hours: 2.5 },
+        ],
+    },
+    {
+        id: 'w4', title: '补弱 + 论文③提纲',
+        goal: '近 5 年综合真题刷完，设计模式分类表背熟',
+        tasks: [
+            { id: 'w4t1', name: '综合二轮：重刷错题 + 法规/标准化高频结论 + 术语再 50 个', subject: '综合', hours: 3 },
+            { id: 'w4t2', name: '案例专项：设计模式题 2 道 + 补剩余年份真题', subject: '案例', hours: 4 },
+            { id: 'w4t3', name: '论文③ 提纲 + 主体段骨架（微服务/架构评估/高并发三方向映射素材卡）', subject: '论文', hours: 3 },
+        ],
+    },
+    {
+        id: 'w5', title: '全真模拟周',
+        goal: '严格计时连做，找到各科时间分配手感',
+        tasks: [
+            { id: 'w5t1', name: '全真模拟 1 次（综合 150min + 案例 90min 连做）', subject: '模拟', hours: 4 },
+            { id: 'w5t2', name: '模拟复盘：错题归因 + 各科时间分配调整', subject: '模拟', hours: 2.5 },
+            { id: 'w5t3', name: '论文：默写摘要模板 + 正文框架各 2 遍；暴露短板定向补强', subject: '论文', hours: 3.5 },
+        ],
+    },
+    {
+        id: 'w6', title: '冲刺周',
+        goal: '只背要点和模板，考前不做新题',
+        tasks: [
+            { id: 'w6t1', name: '最近 2 年综合真题保持手感', subject: '综合', hours: 3 },
+            { id: 'w6t2', name: '案例错题全部重做一遍', subject: '案例', hours: 2.5 },
+            { id: 'w6t3', name: '论文素材卡最终打磨 + 摘要限时默写练习', subject: '论文', hours: 2.5 },
+            { id: 'w6t4', name: '总背诵：架构风格对比表 / 质量属性 / 设计模式分类 / 100 个术语', subject: '背诵', hours: 2 },
+        ],
+    },
+];
+
+const SUBJECTS = ['综合', '案例', '论文', '模拟', '背诵'];
+const STORE_KEY = 'arch-exam-tracker-v1';
+const DEFAULT_EXAM_DATE = '2026-11-07'; // 可在页面上自行修改
+
+/* ================= 状态管理 ================= */
+let state = loadState();
+
+function loadState() {
+    try {
+        const raw = localStorage.getItem(STORE_KEY);
+        if (raw) {
+            const parsed = JSON.parse(raw);
+            return {
+                examDate: parsed.examDate || DEFAULT_EXAM_DATE,
+                done: parsed.done || {},
+                custom: parsed.custom || {},
+                notes: parsed.notes || {},
+            };
+        }
+    } catch (e) { /* 损坏数据按全新状态处理 */ }
+    return { examDate: DEFAULT_EXAM_DATE, done: {}, custom: {}, notes: {} };
+}
+
+function saveState() {
+    localStorage.setItem(STORE_KEY, JSON.stringify(state));
+}
+
+function getAllTasks(week) {
+    const customs = (state.custom[week.id] || []).map(t => ({ ...t, isCustom: true }));
+    return [...week.tasks, ...customs];
+}
+
+/* ================= 渲染 ================= */
+function esc(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c]));
+}
+
+function render() {
+    renderCountdown();
+    renderOverall();
+    renderSubjectStats();
+    renderWeeks();
+}
+
+function renderCountdown() {
+    const input = document.getElementById('examDateInput');
+    if (input.value !== state.examDate) input.value = state.examDate;
+
+    const target = new Date(state.examDate + 'T09:00:00');
+    const diff = Math.ceil((target - new Date()) / 86400000);
+    document.getElementById('countdownNum').textContent = diff >= 0 ? diff : 0;
+}
+
+function collectAllTasks() {
+    const all = [];
+    PLAN.forEach(w => getAllTasks(w).forEach(t => all.push({ ...t, weekId: w.id })));
+    return all;
+}
+
+function renderOverall() {
+    const all = collectAllTasks();
+    const totalH = all.reduce((s, t) => s + Number(t.hours || 0), 0);
+    const doneTasks = all.filter(t => state.done[t.id]);
+    const doneH = doneTasks.reduce((s, t) => s + Number(t.hours || 0), 0);
+    const pct = totalH ? Math.round(doneH / totalH * 100) : 0;
+
+    document.getElementById('overallBar').style.width = pct + '%';
+    document.getElementById('overallText').textContent =
+        `总进度 ${pct}%　已完成 ${doneTasks.length}/${all.length} 项任务`;
+    document.getElementById('hoursText').textContent =
+        `累计 ${fmtH(doneH)} / ${fmtH(totalH)} 小时`;
+}
+
+function fmtH(h) {
+    return Number.isInteger(h) ? String(h) : h.toFixed(1);
+}
+
+function renderSubjectStats() {
+    const container = document.getElementById('subjectStats');
+    const rows = SUBJECTS.map(sub => {
+        const tasks = collectAllTasks().filter(t => t.subject === sub);
+        const planned = tasks.reduce((s, t) => s + Number(t.hours || 0), 0);
+        const done = tasks.filter(t => state.done[t.id])
+            .reduce((s, t) => s + Number(t.hours || 0), 0);
+        const pct = planned ? Math.round(done / planned * 100) : 0;
+        return { sub, planned, done, pct };
+    });
+
+    container.innerHTML = rows.map(r => `
+        <div class="stat-card">
+            <div class="name"><span class="dot" style="background:var(--c-${r.sub})"></span>${r.sub}</div>
+            <div class="hours">${fmtH(r.done)}<small> / ${fmtH(r.planned)} h</small></div>
+            <div class="stat-bar"><div style="width:${r.pct}%;background:var(--c-${r.sub})"></div></div>
+        </div>
+    `).join('');
+}
+
+function renderWeeks() {
+    const container = document.getElementById('weeksContainer');
+    container.innerHTML = PLAN.map((week, wi) => {
+        const tasks = getAllTasks(week);
+        const totalH = tasks.reduce((s, t) => s + Number(t.hours || 0), 0);
+        const doneTasks = tasks.filter(t => state.done[t.id]);
+        const doneH = doneTasks.reduce((s, t) => s + Number(t.hours || 0), 0);
+        const pct = totalH ? Math.round(doneH / totalH * 100) : 0;
+
+        const taskHtml = tasks.map(t => `
+            <div class="task ${state.done[t.id] ? 'done' : ''}" data-task-id="${esc(t.id)}">
+                <div class="checkbox"></div>
+                <div class="task-main">
+                    <div class="task-name">${esc(t.name)}</div>
+                    <div class="task-tags">
+                        <span class="tag" style="background:var(--c-${esc(t.subject)})">${esc(t.subject)}</span>
+                        <span class="tag hours-tag">${fmtH(t.hours)} h</span>
+                    </div>
+                </div>
+                ${t.isCustom ? `<button class="del-btn custom-del" data-del-id="${esc(t.id)}" title="删除自定义任务">✕</button>` : ''}
+            </div>
+        `).join('');
+
+        return `
+        <div class="week-card ${week._open ? 'open' : ''}" data-week="${week.id}">
+            <div class="week-head" data-toggle="${week.id}">
+                <div class="week-badge"><span>W${wi + 1}</span><small>周计划</small></div>
+                <div class="week-title">
+                    <h2>${esc(week.title)}</h2>
+                    <p>${esc(week.goal)}</p>
+                </div>
+                <div class="week-meta"><b>${fmtH(doneH)}</b> / ${fmtH(totalH)} h<br>${doneTasks.length}/${tasks.length} 项</div>
+                <span class="arrow">▶</span>
+            </div>
+            <div class="week-body">
+                <div class="week-bar"><div style="width:${pct}%"></div></div>
+                ${taskHtml}
+                <button class="toggle-add" data-add-toggle="${week.id}">＋ 添加自定义任务</button>
+                <div class="add-task" data-add-form="${week.id}">
+                    <input type="text" placeholder="任务名称" data-new-name="${week.id}">
+                    <select data-new-subject="${week.id}">
+                        ${SUBJECTS.map(s => `<option value="${s}">${s}</option>`).join('')}
+                    </select>
+                    <input type="number" step="0.5" min="0.5" placeholder="小时" value="1" data-new-hours="${week.id}">
+                    <button class="btn btn-primary" data-add-confirm="${week.id}">添加</button>
+                </div>
+                <textarea class="week-note" data-note="${week.id}"
+                    placeholder="本周笔记 / 复盘（自动保存）……">${esc(state.notes[week.id] || '')}</textarea>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+/* ================= 交互 ================= */
+document.addEventListener('click', e => {
+    // 展开/收起
+    const toggleId = e.target.closest('[data-toggle]');
+    if (toggleId && !e.target.closest('.del-btn')) {
+        const week = PLAN.find(w => w.id === toggleId.dataset.toggle);
+        if (week) week._open = !week._open;
+        toggleId.closest('.week-card').classList.toggle('open');
+        return;
+    }
+
+    // 打卡切换
+    const taskEl = e.target.closest('.task');
+    if (taskEl && !e.target.closest('.del-btn')) {
+        const id = taskEl.dataset.taskId;
+        if (state.done[id]) delete state.done[id];
+        else state.done[id] = true;
+        saveState();
+        render();
+        return;
+    }
+
+    // 删除自定义任务
+    const delBtn = e.target.closest('.custom-del');
+    if (delBtn) {
+        e.stopPropagation();
+        const delId = delBtn.dataset.delId;
+        for (const wid of Object.keys(state.custom)) {
+            state.custom[wid] = (state.custom[wid] || []).filter(t => t.id !== delId);
+        }
+        delete state.done[delId];
+        saveState();
+        render();
+        return;
+    }
+
+    // 显示/隐藏新增表单
+    const addToggle = e.target.closest('[data-add-toggle]');
+    if (addToggle) {
+        const form = document.querySelector(`[data-add-form="${addToggle.dataset.addToggle}"]`);
+        if (form) form.classList.toggle('show');
+        return;
+    }
+
+    // 确认新增
+    const addConfirm = e.target.closest('[data-add-confirm]');
+    if (addConfirm) {
+        const wid = addConfirm.dataset.addConfirm;
+        const nameEl = document.querySelector(`[data-new-name="${wid}"]`);
+        const subEl = document.querySelector(`[data-new-subject="${wid}"]`);
+        const hoursEl = document.querySelector(`[data-new-hours="${wid}"]`);
+        const name = nameEl.value.trim();
+        if (!name) { nameEl.focus(); return; }
+        if (!state.custom[wid]) state.custom[wid] = [];
+        const id = `${wid}-c${Date.now()}`;
+        state.custom[wid].push({
+            id,
+            name,
+            subject: subEl.value,
+            hours: Math.max(0.5, Number(hoursEl.value) || 1),
+        });
+        saveState();
+        render();
+        // 保持展开并聚焦下一条输入
+        const card = document.querySelector(`.week-card[data-week="${wid}"]`);
+        if (card) card.classList.add('open');
+        const newForm = document.querySelector(`[data-add-form="${wid}"]`);
+        if (newForm) newForm.classList.add('show');
+        const nextName = document.querySelector(`[data-new-name="${wid}"]`);
+        if (nextName) nextName.focus();
+    }
+});
+
+// 笔记防抖保存
+let noteTimer = null;
+document.addEventListener('input', e => {
+    const noteEl = e.target.closest('[data-note]');
+    if (!noteEl) return;
+    clearTimeout(noteTimer);
+    noteTimer = setTimeout(() => {
+        state.notes[noteEl.dataset.note] = noteEl.value;
+        saveState();
+    }, 400);
+});
+
+// 考试日期
+document.getElementById('examDateInput').addEventListener('change', e => {
+    state.examDate = e.target.value || DEFAULT_EXAM_DATE;
+    saveState();
+    renderCountdown();
+});
+
+// 导出
+document.getElementById('exportBtn').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `备考打卡备份-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+});
+
+// 导入
+document.getElementById('importBtn').addEventListener('click', () => {
+    document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+        try {
+            const parsed = JSON.parse(reader.result);
+            if (!parsed || typeof parsed !== 'object') throw new Error('bad');
+            state = {
+                examDate: parsed.examDate || DEFAULT_EXAM_DATE,
+                done: parsed.done || {},
+                custom: parsed.custom || {},
+                notes: parsed.notes || {},
+            };
+            saveState();
+            render();
+            alert('导入成功');
+        } catch {
+            alert('文件格式不正确，导入失败');
+        }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+});
+
+// 重置
+document.getElementById('resetBtn').addEventListener('click', () => {
+    if (!confirm('确定清空所有打卡记录、自定义任务和笔记吗？此操作不可恢复。')) return;
+    if (!confirm('再次确认：真的要重置全部进度吗？')) return;
+    state = { examDate: state.examDate, done: {}, custom: {}, notes: {} };
+    saveState();
+    render();
+});
+
+render();
+</script>
+</body>
+</html>
